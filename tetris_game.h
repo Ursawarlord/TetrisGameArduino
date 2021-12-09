@@ -1,11 +1,12 @@
 #include "utils.h"
+#include "tetris_song.h"
 
 struct point {
   int x;
   int y;
 };
 
-byte blocks[][4][8] = {
+static char blocks[][4][8] = {
   {
     {0, 0, 0, 1, 0, 0, 0, 0},
     {0, 0, 0, 2, 1, 0, 0, 0},
@@ -39,10 +40,9 @@ byte blocks[][4][8] = {
   },
 };
 
-void(* resetFunc) (void) = 0;
 
-static byte moving[12][8];
-static byte stationary[8][8];
+static char moving[12][8];
+static char stationary[8][8];
 
 static unsigned long lastUpdate;
 static const unsigned long updateInterval = 1000;
@@ -52,6 +52,7 @@ static const unsigned long inputDelay = 120;
 
 static int score;
 static int level;
+
 
 
 void transformMoving(int x, int y) {
@@ -100,6 +101,7 @@ void transformMoving(int x, int y) {
 }
 
 
+
 void rotate90() {
   struct point pivot = { -1, -1};
 
@@ -144,7 +146,6 @@ void rotate90() {
   }
 }
 
-
 void handleInput() {
   Serial.print("Switch: ");
   Serial.println(digitalRead(JOY_SW));
@@ -152,12 +153,12 @@ void handleInput() {
   Serial.println(analogRead(JOY_X));
   Serial.print("Y: ");
   Serial.println(analogRead(JOY_Y));
-  
+
   if (analogRead(JOY_X) < 150) {
     transformMoving(-1, 0);
   } else if ( analogRead(JOY_X) > 850) {
     transformMoving(1, 0);
-  } else if ( analogRead(JOY_Y) > 850) {
+  } else if (analogRead(JOY_Y) > 850) {
     lastUpdate -= updateInterval;
     score++;
   } else if (analogRead(JOY_Y) < 150) {
@@ -166,22 +167,13 @@ void handleInput() {
 }
 
 
+
 int isMovingAtBottom() {
   for (int i = 0; i < 12; i++) {
     for (int j = 0; j < 8; j++) {
       if (moving[i][j] && i == 11 || (moving[i][j] && i >= 4 && i + 1 < 12 && stationary[i - 4 + 1][j])) {
         return 1;
       }
-    }
-  }
-
-  return 0;
-}
-
-int isGameOver() {
-  for (int j = 0; j < 8; j++) {
-    if (stationary[0][j]) {
-      return 1;
     }
   }
 
@@ -199,14 +191,25 @@ void handleAtBottom() {
 }
 
 
-void queueNewBlock() {
-  int randomBlock = random(BLOCK_COUNT - 1);
-  for (int i = 0; i < 4; i++) {
+void render() {
+  for (int i = 0; i < 8; i++) {
     for (int j = 0; j < 8; j++) {
-      moving[i][j] = blocks[randomBlock][i][j];
+      lc.setLed(0, i, j, moving[i + 4][j] | stationary[i][j]);
     }
   }
 }
+
+void renderLcd() {
+  lcd.clear();
+  lcd.setCursor(1, 0);
+  lcd.print("Level: ");
+  lcd.print(level);
+
+  lcd.setCursor(1, 1);
+  lcd.print("Score: ");
+  lcd.print(score);
+}
+
 
 
 void updateRows() {
@@ -269,6 +272,26 @@ void updateRows() {
 }
 
 
+int isGameOver() {
+  for (int j = 0; j < 8; j++) {
+    if (stationary[0][j]) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+
+void queueNewBlock() {
+  int randomBlock = random(BLOCK_COUNT - 1);
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 8; j++) {
+      moving[i][j] = blocks[randomBlock][i][j];
+    }
+  }
+}
+
 
 void updateState() {
   if (isMovingAtBottom()) {
@@ -280,30 +303,24 @@ void updateState() {
   updateRows();
 }
 
-void render() {
-  for (int i = 0; i < 8; i++) {
-    for (int j = 0; j < 8; j++) {
-      lc.setLed(0, i, j, moving[i + 4][j] | stationary[i][j]);
-    }
-  }
-}
 
-void renderLcd() {
-  lcd.clear();
-  lcd.setCursor(1, 0);
-  lcd.print("Level: ");
-  lcd.print(level);
-
-  lcd.setCursor(1, 1);
-  lcd.print("Score: ");
-  lcd.print(score);
+void restart() {
+  memset(moving, 0, sizeof(moving) * sizeof(char));
+  memset(stationary, 0, sizeof(stationary) * sizeof(char));
+  lastUpdate = 0;
+  lastInput = 0;
+  score = 0;
+  level = 0;
 }
 
 
 void tetris_setup() {
   // put your setup code here, to run once:
+  restart();
   lc.shutdown(0, false);
   lc.setIntensity(0, 1);
+
+  pinMode(UNUSED_ANALOG, INPUT);
 
   pinMode(JOY_X, INPUT);
   pinMode(JOY_Y, INPUT);
@@ -314,12 +331,14 @@ void tetris_setup() {
 
   lcd.begin(16, 2);
 
+  Serial.begin(9600);
 
 
-  
 }
 
-void tetris_loop() {
+
+
+int tetris_loop() {
   if (isGameOver()) {
     lcd.clear();
     lcd.setCursor(2, 0);
@@ -339,17 +358,24 @@ void tetris_loop() {
     }
 
     delay(3000);
-    resetFunc();
+    lc.shutdown(0, true);
+    //restart();
+    return -1;
+
   }
-  unsigned long currentMillis = millis();
-  if (currentMillis - lastInput > inputDelay) {
-    handleInput();
-    lastInput = currentMillis;
+  else {
+    unsigned long currentMillis = millis();
+    if (currentMillis - lastInput > inputDelay) {
+      handleInput();
+      lastInput = currentMillis;
+    }
+    if (currentMillis - lastUpdate > updateInterval) {
+      updateState();
+      renderLcd();
+      lastUpdate = currentMillis;
+    }
+    render();
+    playSong();
+    return 1;
   }
-  if (currentMillis - lastUpdate > updateInterval) {
-    updateState();
-    renderLcd();
-    lastUpdate = currentMillis;
-  }
-  render();
 }

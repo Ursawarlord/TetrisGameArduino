@@ -2,7 +2,7 @@
 #include "tetris_game.h"
 
 
-//Arduino pins attached to joystick 
+//Arduino pins attached to joystick
 const byte joystickButtonPin = 9;
 const byte joystickPinX = A1;
 const byte joystickPinY = A0;
@@ -16,49 +16,6 @@ const byte joystickPinY = A0;
 #define none  5
 
 
-byte upArrowChar[8] = {
-  0b00100,
-  0b01110,
-  0b11111,
-  0b00100,
-  0b00100,
-  0b00100,
-  0b00100,
-  0b00100
-};
-
-byte downArrowChar[8] = {
-  0b00100,
-  0b00100,
-  0b00100,
-  0b00100,
-  0b00100,
-  0b11111,
-  0b01110,
-  0b00100
-};
-
-byte leftArrowChar[8] = {
-    B00000,
-  B00100,
-  B01000,
-  B11111,
-  B01000,
-  B00100,
-  B00000,
-  B00000
-};
-
-byte rightArrowChar[8] = {
-  B00000,
-  B00100,
-  B00010,
-  B11111,
-  B00010,
-  B00100,
-  B00000,
-  B00000
-};
 
 
 
@@ -104,11 +61,11 @@ int readJoystick() {
   // read all joystick values
   int X_Axis = analogRead(joystickPinX);     // read the x axis value
   int Y_Axis = analogRead(joystickPinY);     // read the y axis value
- // Y_Axis = map(Y_Axis, 0, 1023, 1023, 0);      // invert the input from the y axis so that pressing the stick forward gives larger values
+  // Y_Axis = map(Y_Axis, 0, 1023, 1023, 0);      // invert the input from the y axis so that pressing the stick forward gives larger values
   int SwitchValue = digitalRead(joystickButtonPin);  // read the state of the switch
   SwitchValue = map(SwitchValue, 0, 1, 1, 0);  // invert the input from the switch to be high when pressed
-  
-  if (SwitchValue == 1){
+
+  if (SwitchValue == 1) {
     output = enter;
   } else if (X_Axis >= 900) {
     output = right;
@@ -124,7 +81,7 @@ int readJoystick() {
 
 
 // Menus
-String mainMenuText[] = {"1.Play game","2.High score","3.Change name", "4. Contrast",  "5.About"};
+String mainMenuText[] = {"1.Play game", "2.High score", "3.Change name", "4. Contrast",  "5.About"};
 int mainMenuCount = sizeof (mainMenuText) / sizeof (mainMenuText [0]);
 
 String currentMenuTitle = "mainMenu";
@@ -140,23 +97,23 @@ int lastJoyRead;
 
 
 void print_line(int line, String text) {
-    lcd.setCursor(0, line);
-    lcd.print("               ");
-    lcd.setCursor(0, line);
-    lcd.print(text);
+  lcd.setCursor(0, line);
+  lcd.print("               ");
+  lcd.setCursor(0, line);
+  lcd.print(text);
 
 }
 
-void moveUpMainMenu(){
-  if (currentMenuIndex <= 0){
+void moveUpMainMenu() {
+  if (currentMenuIndex <= 0) {
     currentMenuIndex = mainMenuCount - 1;
   } else {
     currentMenuIndex--;
-  }  
+  }
 }
 
-void moveDownMainMenu(){
-  if (currentMenuIndex >= mainMenuCount - 1){
+void moveDownMainMenu() {
+  if (currentMenuIndex >= mainMenuCount - 1) {
     currentMenuIndex = 0;
   } else {
     currentMenuIndex++;
@@ -165,12 +122,12 @@ void moveDownMainMenu(){
 
 
 
-void moveRightMainMenu(){
-   if(currentPointMode == "select")
+void moveRightMainMenu() {
+  if (currentPointMode == "select")
     currentPointMode = "scroll";
 }
-void moveLeftMainMenu(){
-  if(currentPointMode == "scroll")
+void moveLeftMainMenu() {
+  if (currentPointMode == "scroll")
     currentPointMode = "select";
 }
 
@@ -179,18 +136,18 @@ unsigned long highScoresArray[15];
 String displayMode = "name"; // switch name or score display
 
 void launchHighScoreMenu() {
-    currentMenuTitle = "highScores";
-    currentPointMode = "scroll";
-    lcd.clear();
+  currentMenuTitle = "highScores";
+  currentPointMode = "scroll";
+  lcd.clear();
 
-    int lastOffset = eepromOffset;
-    String newStr;
-    for(int i=0;i<15;i++) {
-        lastOffset  = readStringFromEEPROM(lastOffset, &newStr);
-        highScorePlayersArray[i] = newStr;
-        highScoresArray[i] = newStr.length() * 250 / 25; // experimental
-    }
-    currentMenuIndex = 0;
+  int lastOffset = eepromOffset;
+  String newStr;
+  for (int i = 0; i < 15; i++) {
+    lastOffset  = readStringFromEEPROM(lastOffset, &newStr);
+    highScorePlayersArray[i] = newStr;
+    highScoresArray[i] = newStr.length() * 250 / 25; // experimental
+  }
+  currentMenuIndex = 0;
 }
 
 
@@ -198,137 +155,44 @@ void launchHighScoreMenu() {
 
 void launchAboutMenu () {
   currentMenuTitle = "about";
-  
+
   currentPointMode = "noFlashes";
-  lcd.begin(16,2);
-  lcd.setCursor(0,0);
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
   lcd.print("                                  ");
-  lcd.setCursor(0,1);
+  lcd.setCursor(0, 1);
   lcd.print("                                 ");
   lcd.clear(); // resets cursor to upper-left
-  
+
   lcd.print("Madalin Frincu 332 ");
-  lcd.setCursor(0,1);
+  lcd.setCursor(0, 1);
   lcd.print("www.github.com/ursawarlord/");
   delay(1000);
 
- 
- }
 
- 
+}
+
+
 void launchTetrisGame () {
   currentMenuTitle = "game";
-  
+
   currentPointMode = "noFlashes";
-  lcd.begin(16,2);
-  lcd.setCursor(0,0);
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
   lcd.print("                                  ");
-  lcd.setCursor(0,1);
+  lcd.setCursor(0, 1);
   lcd.print("                                 ");
   lcd.clear(); // resets cursor to upper-left
 
- tetris_setup();
- 
- }
-
-
-
-byte currentHighScorePosition = 0;
-
-void moveUpHighScore(){
-  if(currentHighScorePosition == 0 && displayMode == "name")
-    currentPointMode = "exit";
-  else {
-   if(displayMode == "score") {
-        displayMode = "name";
-      }
-      else if(displayMode == "name") {
-        currentHighScorePosition--;
-        displayMode = "score";
-      }
-  }
-}
-
-void moveDownHighScore(){
- 
-  if (currentPointMode == "scroll") {
-     if (currentHighScorePosition >= highScoreRecords - 1 && displayMode == "score"){
-        currentHighScorePosition = 0;
-        displayMode = "name";
-    } else {
-      if(displayMode == "score") {
-        currentHighScorePosition++;
-        displayMode = "name";
-      }
-      else if(displayMode == "name") {
-        displayMode = "score";
-      }
-    }
-  }
-  else if (currentPointMode == "exit") {
-    currentPointMode = "scroll";
-  }
-}
-
-void launchMainMenu() {
-
-   currentMenuTitle = "mainMenu";
-   currentPointMode = "scroll";
-   currentMenuIndex = 0;
-   lcd.clear();
-}
-
-void displayHighScores() {
-  lcd.setCursor(0, 0);
-  lcd.print("High scores:");
-  if(currentHighScorePosition == 0) {
-    lcd.setCursor(13, 0);
-    lcd.print("x");
-  }  
-
-
-
-  byte currentJoyRead = readJoystick();
-  if (currentJoyRead != lastJoyRead) {
-
-     // clear line and print values to lcd
-    if(displayMode == "name")
-      print_line(1, String(currentHighScorePosition+1) + "." + highScorePlayersArray[currentHighScorePosition]);
-    else if(displayMode == "score") {
-      print_line(1, "Score: " + String(highScoresArray[currentHighScorePosition]));
-    }
-    
-    lastJoyRead = currentJoyRead;
-    switch (currentJoyRead) {
-      case up: {
-        moveUpHighScore();
-        break;
-      }
-      case down: {
-       moveDownHighScore();
-       break;
-      }
-      case enter: {
-        if (currentPointMode == "exit")  {
-          launchMainMenu();
-        }
-        break;
-      }
-      default: break;
-    }
-
-
-   
-  }
-
+  tetris_setup();
 
 }
 
 
 
 void moveEnterMainMenu() {
-   if (currentPointMode == "select")  {
-     switch(currentMenuIndex) { 
+  if (currentPointMode == "select")  {
+    switch (currentMenuIndex) {
       case 0:
         launchTetrisGame();
         break;
@@ -346,7 +210,7 @@ void moveEnterMainMenu() {
         break;
       default:
         break;
-     }
+    }
   }
 }
 
@@ -355,25 +219,25 @@ void displayMainMenu() {
   lcd.setCursor(0, 0);
   lcd.print("Main Menu:");
   lcd.setCursor(0, 1);
-  lcd.print(mainMenuText[currentMenuIndex]);  
+  lcd.print(mainMenuText[currentMenuIndex]);
   byte currentJoyRead = readJoystick();
 
   if (currentJoyRead != lastJoyRead) {
     lastJoyRead = currentJoyRead;
     // clear line and print values to lcd
     print_line(1, mainMenuText[currentMenuIndex]);
-    
+
     switch (currentJoyRead) {
       case up: {
-        if (currentPointMode == "scroll")
-          moveUpMainMenu();
-        break;
-      }
+          if (currentPointMode == "scroll")
+            moveUpMainMenu();
+          break;
+        }
       case down: {
-        if (currentPointMode == "scroll")
-          moveDownMainMenu();
-        break;
-      }
+          if (currentPointMode == "scroll")
+            moveDownMainMenu();
+          break;
+        }
       case right:
         moveRightMainMenu();
         break;
@@ -381,71 +245,23 @@ void displayMainMenu() {
         moveLeftMainMenu();
         break;
       case enter: {
-        moveEnterMainMenu();
-        break;
-      }
+          moveEnterMainMenu();
+          break;
+        }
       default: break;
     }
 
 
   }
-  
+
 }
 
 
-unsigned long scrollTimer = 0;
-byte resetScrollTimer = 150;
-byte scrollCount = 0;
-bool goScroll = false;
-
-const byte resetTimer = 150;
- 
-
-void displayAbout() {
-
-  if (millis() - scrollTimer > resetTimer) {
-    scrollTimer = millis();
-    scrollCount++;
-    goScroll = true;
-  }
-
-  if(scrollCount > 13+17+4) {
-    scrollCount = 0;
-  }
-
-  if(goScroll) {
-    goScroll = false;
-    if(scrollCount < 13) {
-      lcd.scrollDisplayLeft(); 
-    }
-    else if(scrollCount < 13+17 && scrollCount > 13) {
-      lcd.scrollDisplayRight();
-    }
-    else if (scrollCount < 13+17+4 && scrollCount > 13+17 ){
-     lcd.scrollDisplayLeft();
-    }
-  }
-
-
-     byte currentJoyRead = readJoystick();
-    if (currentJoyRead != lastJoyRead) {
-      lastJoyRead = currentJoyRead;
-      switch (currentJoyRead) {
-        case enter: {
-            launchMainMenu();
-          break; }
-        default: break;
-      }
-   }
-}
-
-  
 
 
 
-void setup_main_menu() {
+void setupMainMenu() {
   lcd.begin(16, 2);
-
 
   String player1 = "MADALIN";
   String player2 = "ANDREI";
@@ -453,15 +269,60 @@ void setup_main_menu() {
 
   byte addrOffsetPlayer1 = writeStringToEEPROM(eepromOffset, player1);
   highScoreRecords++;
-  
+
   writeStringToEEPROM(addrOffsetPlayer1, player2);
   highScoreRecords++;
 
-  
+
 
   // set up joy pins
   pinMode(joystickButtonPin, INPUT_PULLUP);
-  
+
+
+  static byte upArrowChar[8] = {
+    0b00100,
+    0b01110,
+    0b11111,
+    0b00100,
+    0b00100,
+    0b00100,
+    0b00100,
+    0b00100
+  };
+
+  static byte downArrowChar[8] = {
+    0b00100,
+    0b00100,
+    0b00100,
+    0b00100,
+    0b00100,
+    0b11111,
+    0b01110,
+    0b00100
+  };
+
+  static byte leftArrowChar[8] = {
+    B00000,
+    B00100,
+    B01000,
+    B11111,
+    B01000,
+    B00100,
+    B00000,
+    B00000
+  };
+
+  static byte rightArrowChar[8] = {
+    B00000,
+    B00100,
+    B00010,
+    B11111,
+    B00010,
+    B00100,
+    B00000,
+    B00000
+  };
+
 
   lcd.createChar(0, upArrowChar); // create a new custom character (index 0)
   lcd.createChar(1, downArrowChar); // create a new custom character (index 1)
@@ -473,74 +334,224 @@ void setup_main_menu() {
   lastJoyRead = none;
 }
 
+void launchMainMenu() {
+
+  setupMainMenu();
+  currentMenuTitle = "mainMenu";
+  currentPointMode = "scroll";
+  currentMenuIndex = 0;
+  lcd.clear();
+}
+
+
+
+
+
+
+unsigned long scrollTimer = 0;
+byte resetScrollTimer = 150;
+byte scrollCount = 0;
+bool goScroll = false;
+
+const byte resetTimer = 150;
+
+
+void displayAbout() {
+
+  if (millis() - scrollTimer > resetTimer) {
+    scrollTimer = millis();
+    scrollCount++;
+    goScroll = true;
+  }
+
+  if (scrollCount > 13 + 17 + 4) {
+    scrollCount = 0;
+  }
+
+  if (goScroll) {
+    goScroll = false;
+    if (scrollCount < 13) {
+      lcd.scrollDisplayLeft();
+    }
+    else if (scrollCount < 13 + 17 && scrollCount > 13) {
+      lcd.scrollDisplayRight();
+    }
+    else if (scrollCount < 13 + 17 + 4 && scrollCount > 13 + 17 ) {
+      lcd.scrollDisplayLeft();
+    }
+  }
+
+
+  byte currentJoyRead = readJoystick();
+  if (currentJoyRead != lastJoyRead) {
+    lastJoyRead = currentJoyRead;
+    switch (currentJoyRead) {
+      case enter: {
+          launchMainMenu();
+          break;
+        }
+      default: break;
+    }
+  }
+}
+
+
+
+
+byte currentHighScorePosition = 0;
+
+void moveUpHighScore() {
+  if (currentHighScorePosition == 0 && displayMode == "name")
+    currentPointMode = "exit";
+  else {
+    if (displayMode == "score") {
+      displayMode = "name";
+    }
+    else if (displayMode == "name") {
+      currentHighScorePosition--;
+      displayMode = "score";
+    }
+  }
+}
+
+void moveDownHighScore() {
+
+  if (currentPointMode == "scroll") {
+    if (currentHighScorePosition >= highScoreRecords - 1 && displayMode == "score") {
+      currentHighScorePosition = 0;
+      displayMode = "name";
+    } else {
+      if (displayMode == "score") {
+        currentHighScorePosition++;
+        displayMode = "name";
+      }
+      else if (displayMode == "name") {
+        displayMode = "score";
+      }
+    }
+  }
+  else if (currentPointMode == "exit") {
+    currentPointMode = "scroll";
+  }
+}
+
+
+
+void displayHighScores() {
+  lcd.setCursor(0, 0);
+  lcd.print("High scores:");
+  if (currentHighScorePosition == 0) {
+    lcd.setCursor(13, 0);
+    lcd.print("x");
+  }
+
+
+
+  byte currentJoyRead = readJoystick();
+  if (currentJoyRead != lastJoyRead) {
+
+    // clear line and print values to lcd
+    if (displayMode == "name")
+      print_line(1, String(currentHighScorePosition + 1) + "." + highScorePlayersArray[currentHighScorePosition]);
+    else if (displayMode == "score") {
+      print_line(1, "Score: " + String(highScoresArray[currentHighScorePosition]));
+    }
+
+    lastJoyRead = currentJoyRead;
+    switch (currentJoyRead) {
+      case up: {
+          moveUpHighScore();
+          break;
+        }
+      case down: {
+          moveDownHighScore();
+          break;
+        }
+      case enter: {
+          if (currentPointMode == "exit")  {
+            launchMainMenu();
+          }
+          break;
+        }
+      default: break;
+    }
+
+
+
+  }
+
+
+}
+
+
 
 void main_menu_loop() {
 
- 
-    if(currentMenuTitle == "mainMenu") { 
-      displayMainMenu();
-      
-     }
-    else if(currentMenuTitle == "highScores") {
-      displayHighScores();
-    }
-    else if(currentMenuTitle == "about") {
-      displayAbout();
-    }
-    else if(currentMenuTitle == "game") {
-      tetris_loop();
-    }
-    
-    
- 
 
-  
+  if (currentMenuTitle == "mainMenu") {
+    displayMainMenu();
+
+  }
+  else if (currentMenuTitle == "highScores") {
+    displayHighScores();
+  }
+  else if (currentMenuTitle == "about") {
+    displayAbout();
+  }
+  else if (currentMenuTitle == "game") {
+    int gameOver = tetris_loop();
+    if (gameOver == -1) {
+      launchMainMenu();
+    }
+  }
+
+
   // flash the text
-  if(currentPointMode != "noFlashes") {
-    if(millis() - blinkTimer < waitTime) {
-     if(currentPointMode == "scroll") {
-         if(currentMenuTitle == "mainMenu") {
-           lcd.setCursor(15, 1); 
-         }
-       else {
+  if (currentPointMode != "noFlashes") {
+    if (millis() - blinkTimer < waitTime) {
+      if (currentPointMode == "scroll") {
+        if (currentMenuTitle == "mainMenu") {
+          lcd.setCursor(15, 1);
+        }
+        else {
           lcd.setCursor(13, 1);
-       }
+        }
         lcd.write((byte)1);  // print down arrow
       }
-      else if(currentPointMode == "select") {
+      else if (currentPointMode == "select") {
         lcd.setCursor(13, 1);
         lcd.write((byte)2);  // print left arrow
       }
-      else if(currentPointMode == "exit") {
+      else if (currentPointMode == "exit") {
         lcd.setCursor(13, 1);
-        lcd.write((byte)0);  // print up arrow  
-      }  
+        lcd.write((byte)0);  // print up arrow
+      }
     }
   }
 
   // flash the text again
-   if(currentPointMode != "noFlashes") {
-    
+  if (currentPointMode != "noFlashes") {
+
     if (millis() - blinkTimer > resetBlinkTimer) {
-          blinkTimer = millis();
+      blinkTimer = millis();
     }
-   
-    if(millis() - blinkTimer > waitTime) {
-       if(currentPointMode == "scroll" ) {
-          if(currentMenuTitle == "mainMenu") {
-            lcd.setCursor(15, 1); 
-          }
-          else {
-            lcd.setCursor(13, 1);
-          }
-          lcd.write("   "); 
-       }
-      else if(currentPointMode == "select") {
+
+    if (millis() - blinkTimer > waitTime) {
+      if (currentPointMode == "scroll" ) {
+        if (currentMenuTitle == "mainMenu") {
+          lcd.setCursor(15, 1);
+        }
+        else {
           lcd.setCursor(13, 1);
-          lcd.write("   ");
+        }
+        lcd.write("   ");
+      }
+      else if (currentPointMode == "select") {
+        lcd.setCursor(13, 1);
+        lcd.write("   ");
       }
     }
-   }
-   
+  }
+
 
 }
