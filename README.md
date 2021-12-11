@@ -13,6 +13,7 @@ About:
 
 Tetris prototype:
 ![image](https://user-images.githubusercontent.com/19687103/145329641-22f92ae6-ab84-4d98-833b-e799158e4696.png)
+[Video on youtube](https://youtu.be/93Pdn_wSM4A)
 
 
 Important note: You need to not reach for say 70% of memory used else you cannot run the source code.
