@@ -1,43 +1,39 @@
 #include "main_menu.h"
 #include "utils.h"
 byte matrixBrightness = 2;
-const int minThreshold = 200;
-const int maxThreshold = 600;
-const byte moveInterval = 100;
-unsigned long long lastMoved = 0;
-const byte matrixSize = 8;
-bool matrixChanged = true;
-
-
-byte matrixByte[matrixSize] = {
-  B11100000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000,
-  B00000000
-};
-
-
-void setup() {
+void setup()
+{
   Serial.begin(9600);
-  setupMainMenu();
-
 
   // the zero refers to the MAX7219 number, it is zero for 1 chip
-  lc.shutdown(0, false); // turn off power saving, enables display
+  lc.shutdown(0, false);                // turn off power saving, enables display
   lc.setIntensity(0, matrixBrightness); // sets brightness (0~15 possible values)
-  lc.clearDisplay(0);// clear screen
+  lc.clearDisplay(0);                   // clear screen
+
+  lcd.begin(16, 2);
+  lcd.createChar(0, upArrowChar);    // create a new custom character (index 0)
+  lcd.createChar(1, downArrowChar);  // create a new custom character (index 1)
+  lcd.createChar(2, leftArrowChar);  // create a new custom character (index 2)
+  lcd.createChar(3, rightArrowChar); // create a new custom character (index 3)
+
+
+
+  // set up joy pins
+  pinMode(joystickButtonPin, INPUT_PULLUP);
+  // setInputPullupPin(joystickButtonPin);
+
+
+  // Init vars
+  screenStatus = "mainMenu";
+  pointerMode = "scroll";
+  currentMenuIndex = 0;
 
 }
 
-
-
-void loop() {
-
-    main_menu_loop();
-    
-
+void loop()
+{
+  // screenStatus = "game";
+  // pointerMode = "noPointer";
+  handleMenu();
+  // int gameOver = tetris_loop();
 }
