@@ -47,9 +47,9 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 #define BLOCK_COUNT (sizeof(blocks) / sizeof(blocks[0]))
 
-const int_8 dinPin = 12;
-const int_8 clockPin = 11;
-const int_8 loadPin = 10;
+const int dinPin = 12;
+const int clockPin = 11;
+const int loadPin = 10;
 
 LedControl lc = LedControl(dinPin, clockPin, loadPin, 1);
 
@@ -57,7 +57,7 @@ LedControl lc = LedControl(dinPin, clockPin, loadPin, 1);
 const int eepromHighScoreStartOffset = 0;
 
 //Arduino pins attached to joystick
-const int joystickButtonPin = 9;
+const int joystickButtonPin = 8;
 const int joystickPinX = A1;
 const int joystickPinY = A0;
 
@@ -72,7 +72,14 @@ const int joystickPinY = A0;
 
 
 unsigned long lastPress = 0;
-uint_8 debounceDelay = 250;
+int debounceDelay = 250;
+
+const int maxThreshold = 650;
+const int minThreshold = 350;
+
+int contrastPin = 9;
+unsigned int currentContrast = 100;
+
 
 
 
@@ -80,11 +87,23 @@ void printLine(int line, String text)
 {
   lcd.setCursor(0, line);
 
+  int spaceRemaining = 16 - text.length();
+
   for(int i=0; i<text.length();i++) {
-    lcd.write(text[i]);
+    lcd.print(text[i]);
   }
   // lcd.print(text);
-  lcd.print("               ");
+  for(int i=0;i<16;i++) {
+    lcd.print(" ");
+  }
+}
+
+int printInLine(int line, String text, int startingPos) {
+  lcd.setCursor(0,line);
+  for(int i=startingPos;i<startingPos+text.length();i++)
+    lcd.write(text[i]);
+
+  return startingPos+text.length();
 }
 
 
@@ -124,6 +143,18 @@ byte upArrowChar[8] = {
     0b00100,
     0b00100};
 
+byte scrollArrowChar[8] = {
+    0b00100,
+    0b01110,
+    0b11111,
+    0b00100,
+    0b00100,
+    0b11111,
+    0b01110,
+    0b00100};
+
+    
+
 byte downArrowChar[8] = {
     0b00100,
     0b00100,
@@ -144,6 +175,7 @@ byte leftArrowChar[8] = {
     B00000,
     B00000};
 
+
 byte rightArrowChar[8] = {
     B00000,
     B00100,
@@ -153,6 +185,16 @@ byte rightArrowChar[8] = {
     B00100,
     B00000,
     B00000};
+
+byte horizontalArrowsChar[8] = {
+    B01000,
+    B11111,
+    B01000,
+    B00000,
+    B00000,
+    B00010,
+    B11111,
+    B00010};
 
 
 
@@ -171,25 +213,27 @@ int readJoystick()
 
   SwitchValue = map(SwitchValue, 0, 1, 1, 0);       // invert the input from the switch to be high when pressed
 
+
+  
   if (SwitchValue == 1 && millis() - lastPress > debounceDelay)
   {
     lastPress = millis();
     output = enter;
     
   }
-  else if (X_Axis >= 900)
+  else if (X_Axis >= maxThreshold)
   {
     output = right;
   }
-  else if (X_Axis <= 100)
+  else if (X_Axis <= minThreshold)
   {
     output = left;
   }
-  else if (Y_Axis >= 900)
+  else if (Y_Axis >= maxThreshold)
   {
     output = up;
   }
-  else if (Y_Axis <= 100)
+  else if (Y_Axis <= minThreshold)
   {
     output = down;
   }

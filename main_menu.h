@@ -5,29 +5,31 @@ unsigned long blinkTimer;
 const int blinkDelay = 300;
 const int resetBlinkDelay = 350;
 
-int_8 eepromOffset = 0;
-int_8 currentOffset = 0;
+int eepromOffset = 0;
+int currentEepromOffset = 0;
 
-int_8 highScoreRecords = 0;
-int_8 currentHighScorePosition = 0;
+int highScoreRecords = 0;
+int currentHighScorePosition = 0;
 
 // Menus
-String mainMenuText[] = {"1.Play game", "2.High score", "3.Change name", "4. Contrast", "5.About"};
-int_8 mainMenuCount = sizeof(mainMenuText) / sizeof(mainMenuText[0]);
+String mainMenuText[] = {"1.Play game", "2.High score", "3.Change name", "4.Contrast", "5.About"};// "6.Brightness #1", "7.Brightness #2"};
+int mainMenuCount = sizeof(mainMenuText) / sizeof(mainMenuText[0]);
 String screenStatus;
 String pointerMode;
 // Current menu and item to be displayed
-int_8 currentMenuIndex;
+int currentMenuIndex;
 // Used to check joystick state
-int_8 lastJoyRead = none;
+int lastJoyRead = none;
 String highScorePlayerName[15];
 unsigned long highScoresArray[15];
 String menuDisplayItemType;
 
 const int resetScrollTime = 150;
 unsigned long scrollTimer = 0;
-int_8 scrollCount = 0;
+int scrollCount = 0;
 bool goScroll = false;
+
+
 
 void displayMainMenu()
 {
@@ -36,10 +38,12 @@ void displayMainMenu()
 
   int currentJoyRead = readJoystick();
   String newStr;
+  Serial.println(currentJoyRead);
   if (currentJoyRead != lastJoyRead)
   {
     lastJoyRead = currentJoyRead;
     printLine(1, mainMenuText[currentMenuIndex]);
+    
     switch (currentJoyRead)
     {
     case up:
@@ -82,48 +86,76 @@ void displayMainMenu()
       break;
 
     case enter:
+      
+      lastJoyRead = none;
       if (pointerMode == "select")
       {
+
         switch (currentMenuIndex)
         {
         case 0:
+        {
           screenStatus = "game";
           pointerMode = "noPointer";
           bootGame();
           break;
+        }
         case 1:
+        {
           screenStatus = "highScores";
           pointerMode = "scroll";
           lcd.clear();
           int lastOffset = eepromOffset;
-          for (int i = 0; i < 15; i++)
+          
+          for (int i = 0; i < highScoreRecords; i++)
           {
-            lastOffset = readStringFromEEPROM(lastOffset, &newStr);
+            int newOffset = readStringFromEEPROM(lastOffset, &newStr);
+            lastOffset = newOffset;
             highScorePlayerName[i] = newStr;
-            highScoresArray[i] = newStr.length() * 250 / 25; // experimental
+            char c = newStr[2];
+            highScoresArray[i] = newStr.length() * 250 / 25 + (int)c; // experimental
           }
-          currentMenuIndex = 0;
-          break;
-        case 2:
-          //screenStatus = "nameSettings";
-          break;
-        case 3:
-          //screenStatus = "changeContrast";
-          break;
-        case 4:
-          screenStatus = "about";
-          pointerMode = "noPointer";
-          // lcd.begin(16, 2);
-          lcd.setCursor(0, 0);
-          lcd.print("Madalin Frincu 332 ");
-          lcd.print("                                  ");
-          lcd.setCursor(0, 1);
-          lcd.print("www.github.com/ursawarlord/");
-          lcd.print("                                  ");
+          menuDisplayItemType = "playerName";
+          currentHighScorePosition =0;
           break;
         }
+        case 2:
+        { //screenStatus = "nameSettings";
+          break;
+        }
+        case 3:
+        {
+          screenStatus = "changeContrast";
+          pointerMode = "contrastScroll";
+          lcd.clear();
+          break;
+        }
+        case 4:
+        {
+          screenStatus = "about";
+          pointerMode = "noPointer";
+          // lcd.begin(16, 2);           ");
+          printLine(0, "  Madalin   Frincu   332");
+          printLine(1, "www.github.com/ursawarlord/");
+          scrollCount = 0;
+          break;
+        }
+        case 5:
+        {
+          screenStatus = "brightnessMatrix";
+          pointerMode = "contrastScroll";
+          lcd.clear();
+          break;
+        }
+        case 6:
+        {
+          screenStatus = "brightnessScreen";
+          pointerMode = "contrastScroll";
+          lcd.clear();
+          break;
+        }
+        }
       }
-      break;
     }
   }
 }
@@ -133,11 +165,11 @@ void highScoreMemoryInit()
   String player1 = "MADALIN";
   String player2 = "ANDREI";
 
-  byte addrOffsetPlayer1 = writeStringToEEPROM(eepromOffset, player1);
+  byte addrOffsetPlayer1 = writeStringToEEPROM(currentEepromOffset, player1);
   highScoreRecords++;
-  eepromOffset = addrOffsetPlayer1;
+  currentEepromOffset = addrOffsetPlayer1;
 
-  writeStringToEEPROM(eepromOffset, player2);
+  writeStringToEEPROM(currentEepromOffset, player2);
   highScoreRecords++;
 }
 
@@ -182,57 +214,10 @@ void displayAbout()
     case enter:
       screenStatus = "mainMenu";
       pointerMode = "scroll";
-      currentMenuIndex = 0;
+      currentMenuIndex = 4;
       lcd.home();
       break;
     }
-  }
-}
-
-void moveUpHighScore()
-{
-  if (currentHighScorePosition == 0 && menuDisplayItemType == "playerName")
-    pointerMode = "exit";
-  else
-  {
-    if (menuDisplayItemType == "playerScore")
-    {
-      menuDisplayItemType = "playerName";
-    }
-    else if (menuDisplayItemType == "playerName")
-    {
-      currentHighScorePosition--;
-      menuDisplayItemType = "playerScore";
-    }
-  }
-}
-
-void moveDownHighScore()
-{
-
-  if (pointerMode == "scroll")
-  {
-    if (currentHighScorePosition >= highScoreRecords - 1 && menuDisplayItemType == "playerScore")
-    {
-      currentHighScorePosition = 0;
-      menuDisplayItemType = "playerName";
-    }
-    else
-    {
-      if (menuDisplayItemType == "playerScore")
-      {
-        currentHighScorePosition++;
-        menuDisplayItemType = "playerName";
-      }
-      else if (menuDisplayItemType == "playerName")
-      {
-        menuDisplayItemType = "playerScore";
-      }
-    }
-  }
-  else if (pointerMode == "exit")
-  {
-    pointerMode = "scroll";
   }
 }
 
@@ -242,33 +227,83 @@ void displayHighScores()
   lcd.print("High scores:");
   if (currentHighScorePosition == 0)
   {
-    lcd.setCursor(13, 0);
+    lcd.setCursor(15, 0);
     lcd.print("x");
   }
 
-  byte currentJoyRead = readJoystick();
+  int currentPos = 0;
+  if (menuDisplayItemType == "playerName") {
+      lcd.setCursor(0,1);
+      lcd.print(String(currentHighScorePosition+1));
+      lcd.print(".");
+      lcd.print(highScorePlayerName[currentHighScorePosition]);
+      currentPos += String(currentHighScorePosition+1).length() + 1 + highScorePlayerName[currentHighScorePosition].length();
+      for(int i=currentPos;i<15;i++)
+        lcd.print(" ");
+  }
+  else if (menuDisplayItemType == "playerScore")
+  {
+      
+      lcd.setCursor(0,1);
+      lcd.print("Score:");
+      lcd.print(highScoresArray[currentHighScorePosition]);
+      for(int i=7+5;i<15;i++)
+        lcd.print(" ");
+  }
+  int currentJoyRead = readJoystick();
   if (currentJoyRead != lastJoyRead)
   {
+    lastJoyRead = currentJoyRead;
 
     // clear line and print values to lcd
-    if (menuDisplayItemType == "playerName")
-      printLine(1, String(currentHighScorePosition + 1) + "." + highScorePlayerName[currentHighScorePosition]);
-    else if (menuDisplayItemType == "playerScore")
-    {
-      printLine(1, "Score: " + String(highScoresArray[currentHighScorePosition]));
-    }
+    
 
-    lastJoyRead = currentJoyRead;
     switch (currentJoyRead)
     {
     case up:
     {
-      moveUpHighScore();
+      if (currentHighScorePosition == 0 && menuDisplayItemType == "playerName")
+        pointerMode = "exit";
+      else
+      {
+        if (menuDisplayItemType == "playerScore")
+        {
+          menuDisplayItemType = "playerName";
+        }
+        else if (menuDisplayItemType == "playerName")
+        {
+          currentHighScorePosition--;
+          menuDisplayItemType = "playerScore";
+        }
+      }
       break;
     }
     case down:
     {
-      moveDownHighScore();
+      if (pointerMode == "scroll")
+      {
+        if (currentHighScorePosition >= highScoreRecords - 1 && menuDisplayItemType == "playerScore")
+        {
+          currentHighScorePosition = 0;
+          menuDisplayItemType = "playerName";
+        }
+        else
+        {
+          if (menuDisplayItemType == "playerScore")
+          {
+            currentHighScorePosition++;
+            menuDisplayItemType = "playerName";
+          }
+          else if (menuDisplayItemType == "playerName")
+          {
+            menuDisplayItemType = "playerScore";
+          }
+        }
+      }
+      else if (pointerMode == "exit")
+      {
+        pointerMode = "scroll";
+      }
       break;
     }
     case enter:
@@ -277,18 +312,127 @@ void displayHighScores()
       {
         screenStatus = "mainMenu";
         pointerMode = "scroll";
-        currentMenuIndex = 0;
+        currentMenuIndex = 1;
       }
       break;
     }
-    default:
-      break;
     }
   }
 }
 
+void displayContrastSettings()
+{
+  lcd.setCursor(0, 1);
+  lcd.write((byte(2))); // left arrow
+
+  lcd.setCursor(4, 1);
+  lcd.write("CONTRAST");
+  lcd.setCursor(15, 1);
+  lcd.write(byte(3)); // right arrow
+
+  int currentJoyRead = readJoystick();
+  if (currentJoyRead != lastJoyRead)
+  {
+    lastJoyRead = currentJoyRead;
+    switch (currentJoyRead)
+    {
+       case enter:
+      {
+        screenStatus = "mainMenu";
+        pointerMode = "scroll";
+        currentMenuIndex = 4;
+        break;
+      }
+    case left:
+    {
+     
+      if(currentContrast > 10) {
+      currentContrast -= 10; }
+      analogWrite(contrastPin, currentContrast);
+      // printInLine(0,String(currentContrast), 12);
+      break;
+    }
+    case right:
+    {
+      if(currentContrast < 300) {
+      currentContrast += 10; }
+      analogWrite(contrastPin, currentContrast);
+      // lcd.print(currentContrast);
+      // printInLine(0, String(currentContrast), 12);
+      break;
+    }
+    case up:
+    {
+      screenStatus = "mainMenu";
+      pointerMode = "scroll";
+      currentMenuIndex = 4;
+      break;
+    }
+   
+    }
+  }
+}
+
+void displayScreenBrightnessMenu() {
+  lcd.setCursor(0, 1);
+  lcd.write((byte(2))); // left arrow
+
+  lcd.setCursor(2, 1);
+  lcd.write("BRIGHTNESS #1");
+  lcd.setCursor(15, 1);
+  lcd.write(byte(3)); // right arrow
+
+  int currentJoyRead = readJoystick();
+  if (currentJoyRead != lastJoyRead)
+  {
+    lastJoyRead = currentJoyRead;
+    switch (currentJoyRead)
+    {
+       case enter:
+      {
+        screenStatus = "mainMenu";
+        pointerMode = "scroll";
+        currentMenuIndex = 4;
+        break;
+      }
+    case left:
+    {
+     
+      if(currentContrast > 10) {
+      currentContrast -= 10; }
+      analogWrite(contrastPin, currentContrast);
+      // printInLine(0,String(currentContrast), 12);
+      break;
+    }
+    case right:
+    {
+      if(currentContrast < 300) {
+      currentContrast += 10; }
+      analogWrite(contrastPin, currentContrast);
+      // lcd.print(currentContrast);
+      // printInLine(0, String(currentContrast), 12);
+      break;
+    }
+    case up:
+    {
+      screenStatus = "mainMenu";
+      pointerMode = "scroll";
+      currentMenuIndex = 4;
+      break;
+    }
+   
+    }
+  }
+}
+
+void displayMatrixBrightnessMenu() {
+
+}
+
 void handleMenu()
 {
+
+  
 
   if (screenStatus == "mainMenu")
   {
@@ -298,11 +442,22 @@ void handleMenu()
   {
     displayHighScores();
   }
+  else if (screenStatus == "changeContrast")
+  {
+    displayContrastSettings();
+  }
   else if (screenStatus == "about")
   {
     displayAbout();
   }
-   if (screenStatus == "game")
+// else if  (screenStatus == "brightnessMatrix") {
+//     displayMatrixBrightnessMenu();
+// }
+// else if (screenStatus == "brightnessScreen") {
+//     displayScreenBrightnessMenu();
+// }
+
+  if (screenStatus == "game")
   {
     int gameOver = runGame();
     if (gameOver == -1)
@@ -325,15 +480,9 @@ void handleMenu()
     {
       if (pointerMode == "scroll")
       {
-        if (screenStatus == "mainMenu")
-        {
+        
           lcd.setCursor(15, 1);
-        }
-        else
-        {
-          lcd.setCursor(13, 1);
-        }
-        lcd.write((byte)1); // print down arrow
+          lcd.write((byte)1); // print down arrow
       }
       else if (pointerMode == "select")
       {
@@ -342,28 +491,31 @@ void handleMenu()
       }
       else if (pointerMode == "exit")
       {
-        lcd.setCursor(13, 1);
+        lcd.setCursor(15, 1);
         lcd.write((byte)0); // print up arrow
+      }
+      else if (pointerMode == "contrastScroll")
+      {
+        lcd.setCursor(8, 0);
+        lcd.write((byte)5); // 2 arrows
       }
     }
     if (millis() - blinkTimer > blinkDelay)
     {
       if (pointerMode == "scroll")
       {
-        if (screenStatus == "mainMenu")
-        {
-          lcd.setCursor(15, 1);
-        }
-        else
-        {
-          lcd.setCursor(13, 1);
-        }
+        lcd.setCursor(15, 1);
         lcd.write("   ");
       }
       else if (pointerMode == "select")
       {
         lcd.setCursor(13, 1);
         lcd.write("   ");
+      }
+      else if (pointerMode == "contrastScroll")
+      {
+        lcd.setCursor(8, 0);
+        lcd.write("    ");
       }
     }
   }

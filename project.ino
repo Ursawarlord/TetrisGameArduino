@@ -12,11 +12,16 @@ void setup()
 
   lcd.begin(16, 2);
   lcd.createChar(0, upArrowChar);    // create a new custom character (index 0)
-  lcd.createChar(1, downArrowChar);  // create a new custom character (index 1)
+  lcd.createChar(1, scrollArrowChar);  // create a new custom character (index 1)
   lcd.createChar(2, leftArrowChar);  // create a new custom character (index 2)
   lcd.createChar(3, rightArrowChar); // create a new custom character (index 3)
+  lcd.createChar(4, downArrowChar); // create a new custom character (index 4)
+  lcd.createChar(5, horizontalArrowsChar); // create a new custom character (index 4)
+
+  analogWrite(contrastPin, currentContrast);
 
 
+  highScoreMemoryInit();
 
   // set up joy pins
   pinMode(joystickButtonPin, INPUT_PULLUP);
@@ -32,8 +37,5 @@ void setup()
 
 void loop()
 {
-  // screenStatus = "game";
-  // pointerMode = "noPointer";
   handleMenu();
-  // int gameOver = tetris_loop();
 }
