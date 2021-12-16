@@ -1,6 +1,6 @@
 #include "main_menu.h"
 #include "utils.h"
-byte matrixBrightness = 2;
+
 void setup()
 {
   Serial.begin(9600);
@@ -20,6 +20,7 @@ void setup()
 
   analogWrite(contrastPin, currentContrast);
 
+  analogWrite(screenBrightnessPin, screenBrightness);
 
   highScoreMemoryInit();
 

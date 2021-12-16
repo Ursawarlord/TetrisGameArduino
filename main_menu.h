@@ -3,7 +3,7 @@
 
 unsigned long blinkTimer;
 const int blinkDelay = 300;
-const int resetBlinkDelay = 350;
+const int resetBlinkDelay = 450;
 
 int eepromOffset = 0;
 int currentEepromOffset = 0;
@@ -12,7 +12,7 @@ int highScoreRecords = 0;
 int currentHighScorePosition = 0;
 
 // Menus
-String mainMenuText[] = {"1.Play game", "2.High score", "3.Change name", "4.Contrast", "5.About"};// "6.Brightness #1", "7.Brightness #2"};
+String mainMenuText[] = {"1.Play game", "2.High score", "3.Change name", "4.Contrast", "5.About", "6.Brightnss#1", "7.Brightnss#2"};
 int mainMenuCount = sizeof(mainMenuText) / sizeof(mainMenuText[0]);
 String screenStatus;
 String pointerMode;
@@ -20,8 +20,8 @@ String pointerMode;
 int currentMenuIndex;
 // Used to check joystick state
 int lastJoyRead = none;
-String highScorePlayerName[15];
-unsigned long highScoresArray[15];
+String highScorePlayerName[5];
+unsigned long highScoresArray[5];
 String menuDisplayItemType;
 
 const int resetScrollTime = 150;
@@ -38,7 +38,6 @@ void displayMainMenu()
 
   int currentJoyRead = readJoystick();
   String newStr;
-  Serial.println(currentJoyRead);
   if (currentJoyRead != lastJoyRead)
   {
     lastJoyRead = currentJoyRead;
@@ -142,16 +141,17 @@ void displayMainMenu()
         }
         case 5:
         {
-          screenStatus = "brightnessMatrix";
+          screenStatus = "brightnessScreen";
           pointerMode = "contrastScroll";
           lcd.clear();
           break;
         }
         case 6:
         {
-          screenStatus = "brightnessScreen";
+          screenStatus = "brightnessMatrix";
           pointerMode = "contrastScroll";
           lcd.clear();
+          lc.clearDisplay(0);
           break;
         }
         }
@@ -349,7 +349,9 @@ void displayContrastSettings()
       if(currentContrast > 10) {
       currentContrast -= 10; }
       analogWrite(contrastPin, currentContrast);
-      // printInLine(0,String(currentContrast), 12);
+      lcd.setCursor(12,0);
+      lcd.print(currentContrast);
+      lcd.print("   ");
       break;
     }
     case right:
@@ -357,8 +359,9 @@ void displayContrastSettings()
       if(currentContrast < 300) {
       currentContrast += 10; }
       analogWrite(contrastPin, currentContrast);
-      // lcd.print(currentContrast);
-      // printInLine(0, String(currentContrast), 12);
+      lcd.setCursor(12,0);
+      lcd.print(currentContrast);
+      lcd.print("   ");
       break;
     }
     case up:
@@ -378,7 +381,7 @@ void displayScreenBrightnessMenu() {
   lcd.write((byte(2))); // left arrow
 
   lcd.setCursor(2, 1);
-  lcd.write("BRIGHTNESS #1");
+  lcd.print("BRIGHTNESS #1");
   lcd.setCursor(15, 1);
   lcd.write(byte(3)); // right arrow
 
@@ -398,19 +401,22 @@ void displayScreenBrightnessMenu() {
     case left:
     {
      
-      if(currentContrast > 10) {
-      currentContrast -= 10; }
-      analogWrite(contrastPin, currentContrast);
-      // printInLine(0,String(currentContrast), 12);
+      if(screenBrightness > 770) {
+      screenBrightness -= 10; }
+      analogWrite(screenBrightnessPin, screenBrightness);
+       lcd.setCursor(12,0);
+      lcd.print(screenBrightness);
+      lcd.print("   ");
       break;
     }
     case right:
     {
-      if(currentContrast < 300) {
-      currentContrast += 10; }
+      if(screenBrightness < 770) {
+      screenBrightness += 10; }
       analogWrite(contrastPin, currentContrast);
-      // lcd.print(currentContrast);
-      // printInLine(0, String(currentContrast), 12);
+       lcd.setCursor(12,0);
+      lcd.print(screenBrightness);
+      lcd.print("   ");
       break;
     }
     case up:
@@ -425,8 +431,106 @@ void displayScreenBrightnessMenu() {
   }
 }
 
-void displayMatrixBrightnessMenu() {
+bool reverse = false;
+int row = 0;
+  int col = 0;
 
+void displayMatrixBrightnessMenu() {
+  lc.clearDisplay(0);                   // clear screen
+  
+  lcd.setCursor(0, 1);
+  lcd.write((byte(2))); // left arrow
+  
+  lcd.setCursor(2, 1);
+  lcd.print("BRIGHTNESS #2");
+  lcd.setCursor(15, 1);
+  lcd.write(byte(3)); // right arrow
+
+
+  
+
+  if(row < matrixSize && reverse == false) {
+      
+      if(millis() - ledTimer > ledTurnDelay) {
+        ledTimer = millis();
+        lc.setLed(0, col, row, true); // turns on LED at col, row
+        col++;
+      }
+      if(col == matrixSize) {
+        row++;
+        col = 0;
+      }
+  }
+  
+  // Serial.println(row);
+  Serial.println(col);
+  if( (row == matrixSize && col == 0) ) {
+    reverse = !reverse;
+    row = 0;
+    col = 0;
+  }
+
+  if(row < matrixSize && reverse == true) {
+      
+      if(millis() - ledTimer > ledTurnDelay) {
+        ledTimer = millis();
+        lc.setLed(0, col, row, false); // turns on LED at col, row
+        col++;
+      }
+      if(col == matrixSize) {
+        row++;
+        col = 0;
+      }
+  }
+  
+
+
+
+ 
+  int currentJoyRead = readJoystick();
+  if (currentJoyRead != lastJoyRead)
+  {
+    lastJoyRead = currentJoyRead;
+    switch (currentJoyRead)
+    {
+       case enter:
+      {
+        screenStatus = "mainMenu";
+        pointerMode = "scroll";
+        currentMenuIndex = 6;
+        break;
+      }
+    case left:
+    {
+     
+      if(matrixBrightness > 1) {
+      matrixBrightness -= 1; }
+      lc.setIntensity(0,matrixBrightness);
+       lcd.setCursor(12,0);
+      lcd.print(matrixBrightness);
+      lcd.print("   ");
+      break;
+    }
+    case right:
+    {
+      if(matrixBrightness < 20) {
+      matrixBrightness += 1; }
+      lc.setIntensity(0,matrixBrightness);
+       lcd.setCursor(12,0);
+      lcd.print(matrixBrightness);
+      lcd.print("   ");
+      break;
+    }
+    case up:
+    {
+      screenStatus = "mainMenu";
+      pointerMode = "scroll";
+      currentMenuIndex = 6;
+      break;
+    }
+   
+    }
+  }
 }
 
 void handleMenu()
@@ -450,12 +554,12 @@ void handleMenu()
   {
     displayAbout();
   }
-// else if  (screenStatus == "brightnessMatrix") {
-//     displayMatrixBrightnessMenu();
-// }
-// else if (screenStatus == "brightnessScreen") {
-//     displayScreenBrightnessMenu();
-// }
+else if  (screenStatus == "brightnessMatrix") {
+    displayMatrixBrightnessMenu();
+}
+if (screenStatus == "brightnessScreen") {
+    displayScreenBrightnessMenu();
+}
 
   if (screenStatus == "game")
   {

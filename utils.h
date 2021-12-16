@@ -39,9 +39,6 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 #define BUZZER 13
 
-#define JOY_X A1
-#define JOY_Y A0
-#define JOY_SW 9
 
 #define UNUSED_ANALOG 0 // for random seed
 
@@ -49,17 +46,30 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 const int dinPin = 12;
 const int clockPin = 11;
-const int loadPin = 10;
+const int loadPin = 8;
+
+const int screenBrightnessPin = 10;
+int screenBrightness = 1000;
+
+const int matrixSize = 8;
 
 LedControl lc = LedControl(dinPin, clockPin, loadPin, 1);
+
+
+
+byte matrixBrightness = 2;
 
 
 const int eepromHighScoreStartOffset = 0;
 
 //Arduino pins attached to joystick
-const int joystickButtonPin = 8;
+const int joystickButtonPin = A5;
 const int joystickPinX = A1;
 const int joystickPinY = A0;
+
+const byte ledTurnDelay = 25;
+unsigned long ledTimer = 0;
+
 
 
 //Joystick values
