@@ -18,7 +18,7 @@ byte currentHighScorePosition = 0;
 // Menus
 
 bool isPrinted = false;
-byte currentPage = 2; // 3
+byte currentPage = 0; // 3
 
 //HighScore menu
 String menuDisplayItemType;
@@ -445,6 +445,7 @@ void displayContrastSettings()
     pointerMode = POINTER_SCROLL;
     lcd.clear();
     currentMenuSettingsIndex = 2;
+    writeIntIntoEEPROM(eepromContrastAddress,currentContrast);
   }
   else
   {
@@ -496,6 +497,7 @@ void displayScreenBrightnessMenu()
     pointerMode = POINTER_SCROLL;
     lcd.clear();
     currentMenuSettingsIndex = 3;
+    writeIntIntoEEPROM(eepromScreenBrightnessAddress,LCDBrightness);
   }
   else
   {
@@ -580,6 +582,7 @@ void displayMatrixBrightnessMenu()
     pointerMode = POINTER_SCROLL;
     lcd.clear();
     currentMenuSettingsIndex = 4;
+    writeIntIntoEEPROM(eepromMatrixBrightnessAddress,matrixBrightness);
   }
   else
   {
