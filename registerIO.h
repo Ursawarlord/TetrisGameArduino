@@ -1,6 +1,14 @@
 #ifndef REGISTERIO_H
 #define REGISTERIO_H
 
+// PORTB // pin 8 -12
+// PORTD // pin 0-7
+// PORTC // pin A0-A5
+// DDRB // pin 8 -12
+// DDRD // pin 0-7
+// DDRC // pin A0-A5
+
+
 void setInputPullupPin(int pin) {
   if(0 <= pin && pin <= 7) {
     DDRD = ~(1 << pin) & PORTD;
@@ -28,7 +36,7 @@ void setOutputPin(int pin) {
   }
 }
 
-int readPin(int pin) {
+int registerReadPin(int pin) {
   if(0 <= pin && pin <= 7) {
     return (PIND & (1 << pin)) >> pin;
   }

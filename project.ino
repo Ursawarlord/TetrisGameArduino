@@ -3,8 +3,17 @@
 
 void setup()
 {
-  Serial.begin(9600);
 
+  Serial.begin(9600);
+   appInitSuccessfully = readIntFromEEPROM(eepromAppInitSuccessfullyAddress);
+   // Init only when asked
+   if(appInitSuccessfully == OFF) {
+    initDefaults();
+   }
+   // Init if memory is unknown
+   if(appInitSuccessfully != OFF && appInitSuccessfully != ON) {
+     initDefaults();
+   }
   // the zero refers to the MAX7219 number, it is zero for 1 chip
   lc.shutdown(0, false);                // turn off power saving, enables display
   lc.setIntensity(0, matrixBrightness); // sets brightness (0~15 possible values)
@@ -18,23 +27,27 @@ void setup()
   lcd.createChar(4, downArrowChar); // create a new custom character (index 4)
   lcd.createChar(5, horizontalArrowsChar); // create a new custom character (index 4)
 
+  currentContrast = readIntFromEEPROM(eepromContrastAddress);
+  LCDBrightness = readIntFromEEPROM(eepromScreenBrightnessAddress);
+  matrixBrightness = readIntFromEEPROM(eepromMatrixBrightnessAddress);
+  difficultyValue = readIntFromEEPROM(eepromDifficultyAddress);
+  reverseJoystick = (readIntFromEEPROM(eepromReverseJoystickAddress) > 0) ? true : false;
+  
+  
+  readStringFromEEPROM(eepromCurrentUsernameStartOffset, &currentUsername);
   analogWrite(contrastPin, currentContrast);
-
-  analogWrite(screenBrightnessPin, screenBrightness);
-
-  highScoreMemoryInit();
+  analogWrite(LCDBrightnessPin, LCDBrightness);
 
   // set up joy pins
-  pinMode(joystickButtonPin, INPUT_PULLUP);
-  // setInputPullupPin(joystickButtonPin);
-
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(pauseButtonPin, INPUT_PULLUP);  
 
   // Init vars
-  screenStatus = "mainMenu";
-  pointerMode = "scroll";
-  currentMenuIndex = 0;
-
+  screenStatus = STATUS_MAINMENU;
+  pointerMode = POINTER_SCROLL;
+  currentMainMenuIndex = 0;
 }
+
 
 void loop()
 {
