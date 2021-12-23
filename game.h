@@ -48,6 +48,7 @@ const unsigned int inputDelay = 120;
 
 int score;
 int level;
+int countUpdates;
 
 void transformMoving(int x, int y)
 {
@@ -378,7 +379,8 @@ void restart()
   lastUpdate = 0;
   lastInputTimer = 0;
   score = 0;
-  level = 0;
+  level = 0; 
+  countUpdates = 0;
 }
 
 void bootGame()
@@ -394,13 +396,13 @@ void bootGame()
   if(difficultyValue == EASY) {
   for (int i = 0; i < 7; i++)
     stationary[7][i] = 1;
-  updateInterval = 1000;
+  updateInterval = 1000 - level * 4;
   }
   else if(difficultyValue == MEDIUM) {
-    updateInterval = 700;
+    updateInterval = 700 - level * 8;
   }
   else if(difficultyValue == HARD) {
-    updateInterval = 300;
+    updateInterval = 300 - level * 15;
   }
 }
 
@@ -479,6 +481,11 @@ int runGame()
       updateState();
       renderLcd();
       lastUpdate = millis();
+      countUpdates++;
+      if(countUpdates == 5) {
+        countUpdates = 0;
+        level++;
+      }
     }
     render();
     // playSong();

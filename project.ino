@@ -4,6 +4,7 @@
 void setup()
 {
 
+  
   Serial.begin(9600);
    appInitSuccessfully = readIntFromEEPROM(eepromAppInitSuccessfullyAddress);
    // Init only when asked
@@ -40,7 +41,8 @@ void setup()
 
   // set up joy pins
   pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(pauseButtonPin, INPUT_PULLUP);  
+  pinMode(pauseButtonPin, INPUT_PULLUP);
+  pinMode(BUZZER, OUTPUT);  
 
   // Init vars
   screenStatus = STATUS_MAINMENU;

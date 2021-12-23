@@ -418,7 +418,7 @@ void displayHighScores()
     lcd.print(currentName);
     lcd.print(" Score");
     lcd.print(currentScore);
-    lcd.print("    ");
+    lcd.print("          ");
   }
 }
 

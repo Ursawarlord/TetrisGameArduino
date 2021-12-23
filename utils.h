@@ -50,7 +50,7 @@ byte matrixBrightness;
 const int eepromSize = 1024;
 
 const byte eepromHighScoreStartOffset = 0;
-const byte eepromPlayerNameStartOffset = 26;
+const byte eepromPlayerNameStartOffset = 80;
 byte highScoreRecords = 0;
 const byte eepromHighScoreRecordsAddress = 8;
 
@@ -314,12 +314,18 @@ int saveHighScore(const String &playerName, const unsigned int &score)
 
   switch (highScoreRecords)
   {
-  case 0:
+  case 0: {
     writeIntIntoEEPROM(eepromHighScoreStartOffset, score);
     writeStringToEEPROM(eepromPlayerNameStartOffset, playerName);
     place = 1;
+    String d;
+    readStringFromEEPROM(eepromPlayerNameStartOffset, &d);
+    Serial.println(d);
+    
     break;
-  case 1:
+  }
+  case 1:{
+    Serial.println("ALO");
     score1 = readIntFromEEPROM(eepromHighScoreStartOffset);
     if (score > score1)
     {
@@ -327,7 +333,7 @@ int saveHighScore(const String &playerName, const unsigned int &score)
       writeIntIntoEEPROM(eepromHighScoreStartOffset + sizeof(int), score1);
       readStringFromEEPROM(eepromPlayerNameStartOffset, &name1);
       length1 = writeStringToEEPROM(eepromPlayerNameStartOffset, playerName);
-      writeStringToEEPROM(eepromPlayerNameStartOffset + length1, name1);
+      writeStringToEEPROM( (eepromPlayerNameStartOffset + length1), name1);
       place = 1;
     }
     else
@@ -337,8 +343,8 @@ int saveHighScore(const String &playerName, const unsigned int &score)
       writeStringToEEPROM(eepromPlayerNameStartOffset + length1, playerName);
       place = 2;
     }
-    break;
-  case 2:
+    break;}
+  case 2:{
     score1 = readIntFromEEPROM(eepromHighScoreStartOffset);
     score2 = readIntFromEEPROM(eepromHighScoreStartOffset + sizeof(int));
     if (score > score1)
@@ -351,6 +357,7 @@ int saveHighScore(const String &playerName, const unsigned int &score)
       length  = writeStringToEEPROM(eepromPlayerNameStartOffset, playerName);
       writeStringToEEPROM(eepromPlayerNameStartOffset+length, name1);
       writeStringToEEPROM(eepromPlayerNameStartOffset+length+length1, name2);
+      Serial.println(eepromPlayerNameStartOffset+length+length1);
       place = 1;
     }
     else if (score > score2)
@@ -373,7 +380,8 @@ int saveHighScore(const String &playerName, const unsigned int &score)
 
     }
     break;
-  case 3:
+  }
+  case 3:{
     score1 = readIntFromEEPROM(eepromHighScoreStartOffset);
     score2 = readIntFromEEPROM(eepromHighScoreStartOffset + sizeof(int));
     score3 = readIntFromEEPROM(eepromHighScoreStartOffset + 2 * sizeof(int));
@@ -413,6 +421,7 @@ int saveHighScore(const String &playerName, const unsigned int &score)
       return -1;
     }
     break;
+  }
   }
   // Report that we have saved the score
   if(highScoreRecords < 3) {
