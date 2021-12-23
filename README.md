@@ -1,8 +1,8 @@
-# TetrisGameArduino
-Introduction to Robotics project #1: LED matrix 8x8 game
+## ``` TetrisGameArduino```
+> Introduction to Robotics project #1: LED matrix 8x8 game
 
-PHASE 3 README & DOCUMENTATION COMING up TOMMOROW 
-SORRY :(
+|PHASE 3 README & DOCUMENTATION COMING up TOMMOROW|SORRY :(|
+|---|---|
 
 Main menu:
 ![image](https://user-images.githubusercontent.com/19687103/145329595-aef06e8c-088c-456d-b9b6-ac940428aef4.png)
