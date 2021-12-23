@@ -33,6 +33,7 @@ typedef byte uint_8;
 #define POINTER_CONTRAST 724
 
 
+
 const byte rs = 7, en = 6, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
@@ -63,11 +64,8 @@ const byte eepromAppInitSuccessfullyAddress = 20;
 
 const byte eepromCurrentUsernameStartOffset = 500;
 String currentUsername;
+String defaultName = "PLAYER";
 
-//read Serial Monitor for Change name
-String inputString = "";
-char incomingByte = 0;
-bool stringComplete = false;
 
 //Arduino pins attached to joystick
 const int buttonPin = 8;
@@ -245,6 +243,16 @@ byte horizontalArrowsChar[8] = {
     B11111,
     B00010};
 
+byte downSign[8] = {
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+    B00000,
+    B10001,
+    B01010,
+    B00100};
+
 int readInput()
 {
   int output = none;
@@ -290,7 +298,7 @@ int readInput()
 
 
 void initDefaults() {
-  String defaultName = "PLAYER";
+
   writeIntIntoEEPROM(eepromDifficultyAddress, EASY);
   writeIntIntoEEPROM(eepromMatrixBrightnessAddress, 2);
   writeIntIntoEEPROM(eepromContrastAddress, 100);
@@ -320,12 +328,9 @@ int saveHighScore(const String &playerName, const unsigned int &score)
     place = 1;
     String d;
     readStringFromEEPROM(eepromPlayerNameStartOffset, &d);
-    Serial.println(d);
-    
     break;
   }
   case 1:{
-    Serial.println("ALO");
     score1 = readIntFromEEPROM(eepromHighScoreStartOffset);
     if (score > score1)
     {
@@ -357,7 +362,6 @@ int saveHighScore(const String &playerName, const unsigned int &score)
       length  = writeStringToEEPROM(eepromPlayerNameStartOffset, playerName);
       writeStringToEEPROM(eepromPlayerNameStartOffset+length, name1);
       writeStringToEEPROM(eepromPlayerNameStartOffset+length+length1, name2);
-      Serial.println(eepromPlayerNameStartOffset+length+length1);
       place = 1;
     }
     else if (score > score2)

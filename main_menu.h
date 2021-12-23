@@ -15,13 +15,13 @@ byte currentEepromOffset = 0;
 
 byte currentHighScorePosition = 0;
 
+byte currentPositionChangeName = 0;
+String newName = "XXXXXXX";
+
 // Menus
 
 bool isPrinted = false;
-byte currentPage = 0; // 3
-
-//HighScore menu
-String menuDisplayItemType;
+byte currentPage = 0;
 
 // HowToPlay & About submenus
 const int resetAboutScrollTime = 400;
@@ -357,7 +357,8 @@ void displayHighScores()
         {
           currentHighScorePosition--;
         }
-        else {
+        else
+        {
           currentHighScorePosition = highScoreRecords - 1;
         }
         break;
@@ -445,7 +446,7 @@ void displayContrastSettings()
     pointerMode = POINTER_SCROLL;
     lcd.clear();
     currentMenuSettingsIndex = 2;
-    writeIntIntoEEPROM(eepromContrastAddress,currentContrast);
+    writeIntIntoEEPROM(eepromContrastAddress, currentContrast);
   }
   else
   {
@@ -497,7 +498,7 @@ void displayScreenBrightnessMenu()
     pointerMode = POINTER_SCROLL;
     lcd.clear();
     currentMenuSettingsIndex = 3;
-    writeIntIntoEEPROM(eepromScreenBrightnessAddress,LCDBrightness);
+    writeIntIntoEEPROM(eepromScreenBrightnessAddress, LCDBrightness);
   }
   else
   {
@@ -582,7 +583,7 @@ void displayMatrixBrightnessMenu()
     pointerMode = POINTER_SCROLL;
     lcd.clear();
     currentMenuSettingsIndex = 4;
-    writeIntIntoEEPROM(eepromMatrixBrightnessAddress,matrixBrightness);
+    writeIntIntoEEPROM(eepromMatrixBrightnessAddress, matrixBrightness);
   }
   else
   {
@@ -701,6 +702,8 @@ void displaySettingsMenu()
         case 1:
           screenStatus = STATUS_CHANGENAME;
           pointerMode = POINTER_NOTHING;
+          currentPositionChangeName = 0;
+          newName = "XXXXXXX";
           lcd.clear();
           break;
         case 2:
@@ -777,31 +780,141 @@ void displayShowName()
 
 void displayChangeName()
 {
-  printLine(0, "Enter your name");
-  printLine(1, "In serial");
-  byte currentInputRead = readInput();
-  inputString = "";
-  if (currentInputRead != lastInputRead && currentInputRead == enter)
+  lcd.setCursor(0, 1);
+  lcd.print(newName);
+  lcd.setCursor(10, 0);
+  lcd.print("CANCEL");
+  lcd.setCursor(10, 1);
+  lcd.print("ACCEPT");
+  if (currentPositionChangeName < 7)
   {
-    while (Serial.available() > 0)
+
+    lcd.setCursor(currentPositionChangeName, 0);
+    lcd.write(byte(6)); // down sign
+
+    byte currentInputRead = readInput();
+    if (currentInputRead != lastInputRead)
     {
-      incomingByte = (char)Serial.read();
-      if (incomingByte == '\n')
+      lastInputRead = currentInputRead;
+      switch (currentInputRead)
       {
-        stringComplete = true;
-        currentUsername = inputString;
-        writeStringToEEPROM(eepromCurrentUsernameStartOffset, currentUsername);
+      case left:
+        if (currentPositionChangeName > 0)
+        {
+          lcd.setCursor(currentPositionChangeName, 0);
+          lcd.print(" "); // clear previous character
+          currentPositionChangeName--;
+        }
         break;
+      case right:
+        lcd.setCursor(currentPositionChangeName, 0);
+        lcd.print(" "); // clear previous character
+        currentPositionChangeName++;
+        break;
+      }
+    }
+
+    switch (currentInputRead)
+    {
+    case up:
+      if (newName[currentPositionChangeName] == 90) // upper case 'Z'
+      {
+        newName[currentPositionChangeName] = 32;
+      }
+      else if (newName[currentPositionChangeName] == 32) // empty character
+      {
+        newName[currentPositionChangeName] = 97; // lower case 'a'
+      }
+      else if (newName[currentPositionChangeName] == 122) // lower case 'z'
+      {
+        newName[currentPositionChangeName] = 65; // upper case 'A'
       }
       else
       {
-        inputString += incomingByte;
+        newName[currentPositionChangeName]++;
+      }
+      delay(150);
+      break;
+    case down:
+      if (newName[currentPositionChangeName] == 96) //lower case 'a'
+      {
+        newName[currentPositionChangeName] = 32; // upper case 'Z'
+      }
+      else if (newName[currentPositionChangeName] == 32) // empty character
+      {
+        newName[currentPositionChangeName] = 90; // upper case 'Z'
+      }
+      else if (newName[currentPositionChangeName] == 63) // upper case 'A'
+      {
+        newName[currentPositionChangeName] = 122; // lower case 'z'
+      }
+      else
+      {
+        newName[currentPositionChangeName]--;
+      }
+      delay(150);
+      break;
+    }
+  }
+  else if (currentPositionChangeName == 7) // CANCEL
+  {
+    lcd.setCursor(8, 0);
+    lcd.write(byte(3)); // right arrow
+    byte currentInputRead = readInput();
+    if (currentInputRead != lastInputRead)
+    {
+      lastInputRead = currentInputRead;
+      if (currentInputRead == left)
+      {
+        currentPositionChangeName = 0;
+        lcd.setCursor(8, 0);
+        lcd.write(" "); // clear previous character
+      }
+      if (currentInputRead == right)
+      {
+        currentPositionChangeName = 8;
+        lcd.setCursor(8, 0);
+        lcd.write(" "); // clear previous character
+      }
+      else if (currentInputRead == enter)
+      {
+        screenStatus = STATUS_SETTINGS;
+        pointerMode = POINTER_SCROLL;
+        currentMenuSettingsIndex = 1;
+        lcd.clear();
       }
     }
-    lastInputRead = currentInputRead;
-    screenStatus = STATUS_SETTINGS;
-    pointerMode = POINTER_SCROLL;
-    currentMainMenuIndex = 1;
+  }
+  else if (currentPositionChangeName == 8) // ACCEPT
+  {
+    lcd.setCursor(8, 1);
+    lcd.write(byte(3)); // right arrow
+    byte currentInputRead = readInput();
+    if (currentInputRead != lastInputRead)
+    {
+      lastInputRead = currentInputRead;
+      if (currentInputRead == left)
+      {
+        currentPositionChangeName = 7;
+        lcd.setCursor(8, 1);
+        lcd.write(" "); // clear previous character
+      }
+      if (currentInputRead == right)
+      {
+        currentPositionChangeName = 8;
+        lcd.setCursor(8, 1);
+        lcd.write(" "); // clear previous character
+      }
+      else if (currentInputRead == enter)
+      {
+        screenStatus = STATUS_SETTINGS;
+        pointerMode = POINTER_SCROLL;
+        currentMenuSettingsIndex = 1;
+        lcd.clear();
+        currentUsername = newName;
+        writeStringToEEPROM(eepromCurrentUsernameStartOffset, currentUsername);
+      }
+    }
   }
 }
 
@@ -881,17 +994,14 @@ void displaySystemConfig()
         if (difficultyValue == EASY)
         {
           difficultyValue = MEDIUM;
-          // lcd.print(" ez >med hd");
         }
         else if (difficultyValue == MEDIUM)
         {
           difficultyValue = HARD;
-          // lcd.print(" ez >med hd");
         }
         else if (difficultyValue == HARD)
         {
           difficultyValue = EASY;
-          // lcd.print(" ez med >hd");
         }
       }
       break;
@@ -921,7 +1031,7 @@ void displaySystemConfig()
     case enter:
       screenStatus = STATUS_SETTINGS;
       pointerMode = POINTER_SCROLL;
-      currentMenuSettingsIndex = 0;
+      currentMenuSettingsIndex = 5;
       lcd.clear();
       break;
     }
@@ -981,9 +1091,12 @@ void handleMenu()
   }
   else if (screenStatus == STATUS_GAME)
   {
+    debounceDelay = 90;
     int gameOver = runGame();
-    if (gameOver == -1)
+    if (gameOver == 1)
     {
+      debounceDelay = 800;
+
       screenStatus = STATUS_MAINMENU;
       pointerMode = POINTER_SCROLL;
       currentMainMenuIndex = 0;

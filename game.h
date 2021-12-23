@@ -184,8 +184,47 @@ void rotate90()
 void handleInput()
 {
 
-  int input = readInput();
+  int input = none;
+  int X_Axis = analogRead(joystickPinX);      // read the x axis value
+  int Y_Axis = analogRead(joystickPinY);      // read the y axis value
+  int buttonValue = registerReadPin(buttonPin);   // read the state of the button
+  buttonValue = map(buttonValue, 0, 1, 1, 0); // invert the input from the button to be high when pressed
+  if(reverseJoystick) {
+    X_Axis = map(X_Axis, 0, 1024, 1024, 0);
+  }
+  int pauseButtonValue = registerReadPin(pauseButtonPin);
+  pauseButtonValue = map(pauseButtonValue, 0, 1, 1, 0); // invert the input from the button to be high when pressed
 
+
+  if (pauseButtonValue == 1)
+  {
+    lastPress = millis();
+    input = pause;
+  }
+  else if (X_Axis >= maxThreshold)
+  {
+    input = right;
+  }
+  else if (X_Axis <= minThreshold)
+  {
+    input = left;
+  }
+  else if (Y_Axis >= maxThreshold)
+  {
+    input = up;
+  }
+  else if (Y_Axis <= minThreshold)
+  {
+    input = down;
+  }
+  
+  // not inside switch because I want more interactions
+  if (buttonValue == 1 && millis() - lastPress > debounceDelay)
+  {
+    lastPress = millis();
+    rotate90();
+  }
+  
   switch (input)
   {
   case left:
@@ -199,10 +238,6 @@ void handleInput()
     lastUpdate -= updateInterval;
     score++;
     break;
-  case enter:
-    rotate90();
-    break;
-
   case pause:
     if (!isGameOver())
     {
@@ -220,6 +255,7 @@ void handleInput()
         lcd.write("!"); 
         delay(400);
       }
+      debounceDelay = 800;
     }
     break;
   }
@@ -408,7 +444,6 @@ void bootGame()
 
 void congrulations(const int &score) {
   int place = saveHighScore(currentUsername, score);
-  Serial.println(place);
   if(place == -1) {
     lcd.clear();
     lcd.setCursor(0,0);
@@ -464,9 +499,6 @@ int runGame()
     congrulations(score);
     lc.shutdown(0, true);
     delay(3000);
-    screenStatus = STATUS_MAINMENU;
-    pointerMode = POINTER_SCROLL;
-    currentMainMenuIndex = 0;
     return 1;
   }
   else
@@ -478,6 +510,9 @@ int runGame()
     }
     if (millis() - lastUpdate > updateInterval)
     {
+      tone(BUZZER,100);
+      delay(2);
+      noTone(BUZZER);
       updateState();
       renderLcd();
       lastUpdate = millis();
