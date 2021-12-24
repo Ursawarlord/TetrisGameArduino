@@ -5,6 +5,9 @@
 | ![image](https://user-images.githubusercontent.com/19687103/147365068-16a3ab76-9fa3-41f4-9915-e6e26e64be42.png) |I am Mădălin Frîncu, a CS student at Unibuc and this repository showcases my project in Arduino: a fully operating Tetris game. I have picked this game not because it's just retro but because I have a current passion for this game and I love playing Tetris with my 3D glasses for the great experience it can offer for keen minds. |
 |---|---|
 
+
+
+
 # Showcase
 >### Main Menu
 ![image](https://user-images.githubusercontent.com/19687103/147365418-abdf7610-53a2-464b-a1f0-e27e41743424.png)
@@ -14,6 +17,19 @@
 ![image](https://user-images.githubusercontent.com/19687103/147365687-657af42f-13e0-4d6f-a0ae-c4749ddfc567.png)
 
 ---------
+
+## Components
+
+- Arduino UNO
+- 16x2 LCD Display
+- 8x8 LED Matrix
+- Joystick
+- Breadboards
+- Wires
+- Electrolytic capacitor
+- Ceramic capacitor
+- Resistors
+- 2 Buttons: Pause Button & Enter Button
 
 
 ## Video on YouTube
