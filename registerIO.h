@@ -1,3 +1,9 @@
+/*
+ * registerIO.h has register functions to replace
+ * digitalWrite() and digitalRead() for 
+ * much faster I/O operations
+*/
+
 #ifndef REGISTERIO_H
 #define REGISTERIO_H
 
@@ -9,20 +15,20 @@
 // DDRC // pin A0-A5
 
 
-void setInputPullupPin(int pin) {
-  if(0 <= pin && pin <= 7) {
-    DDRD = ~(1 << pin) & PORTD;
-    PORTD = (1 << pin ) | PORTD;
-  }
-  else if(8 <= pin && pin <= 13) {
-    DDRB = ~(1 << (pin-8) ) & PORTB;
-    PORTB = (1 << (pin-8) ) | PORTB;
-  }
-  else if(A0 <= pin && pin <= A5) {
-    DDRC = ~(1 << (pin-A0) ) & PORTC;
-    PORTC = (1 << (pin-A0) ) | PORTC;
-  }
-}
+// void setInputPullupPin(int pin) {
+//   if(0 <= pin && pin <= 7) {
+//     DDRD = ~(1 << pin) & PORTD;
+//     PORTD = (1 << pin ) | PORTD;
+//   }
+//   else if(8 <= pin && pin <= 13) {
+//     DDRB = ~(1 << (pin-8) ) & PORTB;
+//     PORTB = (1 << (pin-8) ) | PORTB;
+//   }
+//   else if(A0 <= pin && pin <= A5) {
+//     DDRC = ~(1 << (pin-A0) ) & PORTC;
+//     PORTC = (1 << (pin-A0) ) | PORTC;
+//   }
+// }
 
 void setOutputPin(int pin) {
   if(0 <= pin && pin <= 7) {
@@ -55,9 +61,6 @@ void writeHighToDigitalPin(int pin) {
   else if(8 <= pin && pin <= 13) {
     PORTB = (1 << (pin-8) ) | PORTB;
   }
-//  else if(A0 <= pin && pin <= A5) {
-//    DDRC = (1 << (pin-A0) ) | DDRC;
-//  }
 }
 
 void writeLowToDigitalPin(int pin) {
@@ -68,9 +71,6 @@ void writeLowToDigitalPin(int pin) {
   else if(8 <= pin && pin <= 13) {
     PORTB = ~(1 << (pin-8) ) & PORTB;
   }
-//  else if(A0 <= pin && pin <= A5) {
-//    DDRC = (1 << (pin-A0) ) | DDRC;
-//  }
 }
 
 #endif
