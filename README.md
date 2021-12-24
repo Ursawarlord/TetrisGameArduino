@@ -1,23 +1,53 @@
 ## ``` TetrisGameArduino```
 > Introduction to Robotics project #1: LED matrix 8x8 game
 
-|PHASE 3 README & DOCUMENTATION COMING up TOMMOROW|SORRY :(|
+## Backstory
+| ![image](https://user-images.githubusercontent.com/19687103/147365068-16a3ab76-9fa3-41f4-9915-e6e26e64be42.png) |I am Mădălin Frîncu, a CS student at Unibuc and this repository showcases my project in Arduino: a fully operating Tetris game. I have picked this game not because it's just retro but because I have a current passion for this game and I love playing Tetris with my 3D glasses for the great experience it can offer for keen minds. |
 |---|---|
 
-Main menu:
-![image](https://user-images.githubusercontent.com/19687103/145329595-aef06e8c-088c-456d-b9b6-ac940428aef4.png)
+# Showcase
+>### Main Menu
+![image](https://user-images.githubusercontent.com/19687103/147365418-abdf7610-53a2-464b-a1f0-e27e41743424.png)
+>### Contrast settings
+![image](https://user-images.githubusercontent.com/19687103/147365597-b3bc7a17-b396-4e8d-9c13-ec2028ea90e3.png)
+>### Tetris gameplay
+![image](https://user-images.githubusercontent.com/19687103/147365687-657af42f-13e0-4d6f-a0ae-c4749ddfc567.png)
 
-High score:
-![image](https://user-images.githubusercontent.com/19687103/145329623-cfc26926-54ed-4e50-a105-9320d75afc78.png)
-![image](https://user-images.githubusercontent.com/19687103/145329630-edd0230a-de90-41a4-bd2b-332486c7f4bf.png)
-
-About:
-![image](https://user-images.githubusercontent.com/19687103/145329637-53e60af5-18b6-4fbf-97ef-714cdfe635c6.png)
-
-Tetris prototype:
-![image](https://user-images.githubusercontent.com/19687103/145329641-22f92ae6-ab84-4d98-833b-e799158e4696.png)
-[Video on youtube](https://youtu.be/93Pdn_wSM4A)
+---------
 
 
-Important note: You need to not reach for say 70% of memory used else you cannot run the source code.
-![image](https://user-images.githubusercontent.com/19687103/145329089-189b8ca3-30c7-416c-876c-f2d070be5f7a.png)
+## Video on YouTube
+
+[2]: https://youtu.be/E9lpa9JYtPs
+[1]: https://user-images.githubusercontent.com/19687103/147366010-57772f8a-3fd1-4d4e-90d3-051aca318e99.png
+
+[![youtube link][1]][2]
+
+
+
+
+# Code architecture
+
+
+The following source code files are used in the project.
+
+| File | Description |
+|---|---|
+| game.h | Defines game variables and game logic in a few functions |
+| myLedControl.h | A copy of LedControl.h for improving speed in digitalRead() and digitalWrite() operations  |
+| myLiquidCrystal.h | A copy of LiquidCrystal.h for improving speed in digitalRead() and digitalWrite() operations |
+| registerIO.h | File containing functions for digital I/O on Arduino pins using registers |
+| main_menu.h | File defining main menu functionalities |
+| project.ino | Has the loop() and setup() functions for main program  |
+| song.h | Defines a short Tetris theme song and it's used on startUp and on changeName |
+| utils.h | Defines essential variables and utility functions used by other files |
+
+|Much more code comments to be found in source code|![ezgif com-gif-maker](https://user-images.githubusercontent.com/19687103/147366983-b3af8bde-6af2-480a-9dd3-35e2e83f5e74.gif)|
+|---|---|
+
+
+
+Call graph on handleMenu() from main_menu.h called in main program. It's made by Doxygen using dot tool from Graphviz package  
+
+![image](https://user-images.githubusercontent.com/19687103/147364069-3723d8e5-35bc-4261-a119-cad28c77aff5.png)
+
